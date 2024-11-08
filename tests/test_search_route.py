@@ -4,30 +4,49 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 
-class TestRouteSearch(unittest.TestCase):
 
+class TestRouteSearch(unittest.TestCase):
     def setUp(self):
-        # Укажите путь к вашему драйверу (например, ChromeDriver)
         self.driver = webdriver.Chrome()
-        self.driver.get("https://www.idos.cz/")  # Сайт IDOS
+        self.driver.get("https://idos.cz/")
+        self.driver.maximize_window()
+        time.sleep(2)  # Дать время для загрузки страницы
 
     def test_search_route(self):
         driver = self.driver
-        # Найдите поле поиска и введите маршрут
-        search_box = driver.find_element(By.ID, "search-input")
-        search_box.send_keys("Praha - Brno")  # Введите маршрут
-        search_box.send_keys(Keys.RETURN)     # Нажмите Enter
 
+        # Подтверждение согласия с cookies
+        try:
+            consent_button = driver.find_element(By.ID, "didomi-notice-agree-button")
+            consent_button.click()
+            time.sleep(2)
+        except:
+            print("Кнопка согласия с cookies не найдена.")
+
+        # Пример для начальной точки "Откуда"
+        start_button = driver.find_element(By.XPATH, '//*[@id="From"]')
+        start_button.click()
+        start_button.send_keys("Praha")  # Введите начальный пункт
+
+        # Пример для конечной точки "Куда"
+        end_button = driver.find_element(By.XPATH, '//*[@id="To"]')
+        end_button.click()
+        end_button.send_keys("Brno")  # Введите конечный пункт
+
+        # Нажмите Enter для поиска
+        end_button.send_keys(Keys.RETURN)
         time.sleep(3)  # Подождите, пока загрузится результат
 
-        # Проверьте наличие результатов поиска
-        results = driver.find_elements(By.CLASS_NAME, "result")
-        self.assertTrue(len(results) > 0, "Поиск не дал результатов")
+        # Проверка наличия результатов поиска
+        results = driver.find_elements(By.ID, "col-content")
+        self.assertGreater(len(results), 0, "Результаты поиска не найдены.")
+
+        # Вывод сообщения об успешном прохождении теста
+        print("Тест успешно пройден: результаты поиска отображены.")
 
     def tearDown(self):
-        # Закройте браузер после теста
         self.driver.quit()
+
 
 if __name__ == "__main__":
     unittest.main()
-
